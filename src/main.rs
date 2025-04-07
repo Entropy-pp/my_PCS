@@ -45,7 +45,7 @@ fn main() {
     let rng = &mut test_rng();
 
     // setup
-    let max_degree = 256;
+    let max_degree = 1024;
     let pp = PCS::setup(max_degree, false, rng).unwrap();
     // let vk: VerifierKey<Bls12_377> = VerifierKey {
     //     g: pp.powers_of_g[0],
@@ -69,7 +69,7 @@ fn main() {
     // secret polynomials, n = 2^{2*t}, b = sqrt(n) = 2^{t}, s = 2*t, degree = n - 1
     // coeffs: coefficients of the secret polynomials
     let base:usize = 2;
-    let t:usize = 2;      // 修改这里的 t 来改变多项式的 最高次数!!!!
+    let t:usize = 5;      // 修改这里的 t 来改变多项式的 最高次数!!!!
     let s:usize = 2 * t;
     let n:usize = base.pow(s as u32);
     let degree = n - 1;
@@ -84,8 +84,9 @@ fn main() {
         Some(degree),
         Some(2), // we will open a univariate poly at two points
     );
-    println!("f(X):");
-    println!("{:?}", labeled_poly.polynomial());
+    // println!("f(X):");
+    // println!("{:?}", labeled_poly.polynomial());
+    println!("f(X)次数：{:?}", n);
 
 
     let com_f = commit(&pp, &labeled_poly);
@@ -95,15 +96,15 @@ fn main() {
 
     // let u :Vec<Fr>= vec![Fr::from(1u64),Fr::from(0u64),Fr::from(1u64),Fr::from(1u64)];
     // let (u2, u1) = split_u(&u);
-    println!("{:?}", u);
-    println!("{:?}", u1);
-    println!("{:?}", u2);
+    // println!("{:?}", u);
+    // println!("{:?}", u1);
+    // println!("{:?}", u2);
     let v = multilinear_eval(&labeled_poly.coeffs,&u,s);
 
     // 1. Commiting to partial sum h
     let h_poly = partial_sum(&labeled_poly, &u1);
-    println!("h(X):");
-    println!("{:?}", h_poly.polynomial());
+    // println!("h(X):");
+    // println!("{:?}", h_poly.polynomial());
     let com_h = commit(&pp, &h_poly);
     let hv = multilinear_eval(&h_poly.coeffs,&u2, t);
 
@@ -112,10 +113,10 @@ fn main() {
     // let alpha = Fr::from(1u64);
     let g_poly = folded_g(&labeled_poly, alpha);
     let q_poly = compute_q(&labeled_poly,alpha);
-    println!("g(X):");
-    println!("{:?}", g_poly.polynomial());
-    println!("q(X):");
-    println!("{:?}", q_poly.polynomial());
+    // println!("g(X):");
+    // println!("{:?}", g_poly.polynomial());
+    // println!("q(X):");
+    // println!("{:?}", q_poly.polynomial());
     let ga = multilinear_eval(&g_poly.coeffs,&u1, t);
 
     let com_g = commit(&pp, &g_poly);
@@ -126,13 +127,13 @@ fn main() {
     // let gamma = Fr::from(1u64);
     let s_poly = compute_s(&g_poly,&h_poly,&u1,&u2,gamma,b);
     let com_s = commit(&pp, &s_poly);
-    println!("S(X):");
-    println!("{:?}", s_poly.polynomial());
+    // println!("S(X):");
+    // println!("{:?}", s_poly.polynomial());
 
     let d_poly = compute_d(&g_poly,b);
     let com_d = commit(&pp, &d_poly);
-    println!("D(X):");
-    println!("{:?}", d_poly.polynomial());
+    // println!("D(X):");
+    // println!("{:?}", d_poly.polynomial());
 
     // 4. KZG evaluations
     let z:Fr = <Bls12_377 as Pairing>::ScalarField::rand(rng);
@@ -153,8 +154,8 @@ fn main() {
         - z * s_z - z_inverse * s_hat_z) / Fr::from(2u64);
 
     let big_h = compute_big_h(&labeled_poly.polynomial(), &q_poly, z, b, alpha, g_z);
-    println!("H(X):");
-    println!("{:?}", big_h.polynomial());
+    // println!("H(X):");
+    // println!("{:?}", big_h.polynomial());
 
 
     let proof_z = commit(&pp,&big_h);
@@ -179,7 +180,7 @@ fn main() {
     println!("Step f: acc");
 
 
-    // BDFG20
+    // BDFG20: 需要的点集 S_i , T ，多项式 r_i
     let vec_f = vec![g_poly.polynomial(), h_poly.polynomial(), s_poly.polynomial(), d_poly.polynomial()];
     let g_points = vec![z, z_inverse];
     let g_values = vec![g_z, g_hat_z];
@@ -206,15 +207,15 @@ fn main() {
     let batch_z:Fr = <Bls12_377 as Pairing>::ScalarField::rand(rng);
     let batch_gamma:Fr = <Bls12_377 as Pairing>::ScalarField::rand(rng);
 
-    // batch_z, batch_gamma
+    // 用 batch_z, batch_gamma
+    // 计算 f, L, W, W'
     let (batch_f, batch_w, batch_l, batch_w_hat) = compute_batch_f_w_l_w_hat(vec_f, rr, t, all_s, batch_gamma, batch_z);
 
     let comm_batch_w = commit(&pp, &batch_w);
 
     let comm_batch_w_hat = commit(&pp, &batch_w_hat);
 
-
-
+    // pairing
     let vec_com = vec![com_g.0, com_h.0, com_s.0, com_d.0];
 
     let t = vec![z, z_inverse, alpha];
