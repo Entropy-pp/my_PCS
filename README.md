@@ -9,15 +9,15 @@
 
 ### $r(X),\ Z_s(X)$ 的定义：
 
-![alt text](figure\image.png)
+![alt text](figure/image.png)
 
 ### Claim：
 
-![alt text](figure\image-1.png)
+![alt text](figure/image-1.png)
 
 ### 证明流程：
 
-![alt text](figure\image-2.png)
+![alt text](figure/image-2.png)
 
 # 代码说明
 
@@ -33,4 +33,5 @@
 2. Step g: acc
 
 3. $h(u_2)=f(u),\ g(u_1)=h(\alpha)=h_{\alpha}$ 
-![alt text](figure\image-3.png)
+
+![alt text](figure/image-3.png)
